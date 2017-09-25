@@ -48,7 +48,7 @@ function pkt_setup () {
 }
 
 function insert_vrouter(){
-    lsmod vrouter
+    lsmod |grep vrouter 2&>1 > /dev/null
     if [ $? -ne 0 ];then
       modprobe vrouter
     fi
@@ -63,9 +63,12 @@ function insert_vrouter(){
         pkt_setup pkt3
     fi
     BIND_INT_MAC=`cat /sys/class/net/${BIND_INT}/address`
-    /bin/vif --create vhost0 --mac ${BIND_INT_MAC}
-    /bin/vif --add ${BIND_INT} --mac ${BIND_INT_MAC} --vrf 0 --vhost-phys --type physical
-    /bin/vif --add vhost0 --mac ${BIND_INT_MAC} --vrf 0 --type vhost --xconnect ${BIND_INT}
+    vif --list |grep vhost0  2&>1 > /dev/null
+    if [ $? -ne 0 ]; then
+        /bin/vif --create vhost0 --mac ${BIND_INT_MAC}
+        /bin/vif --add ${BIND_INT} --mac ${BIND_INT_MAC} --vrf 0 --vhost-phys --type physical
+        /bin/vif --add vhost0 --mac ${BIND_INT_MAC} --vrf 0 --type vhost --xconnect ${BIND_INT}
+    fi
 }
 
 if [[ "${TYPE}" == "kernel_mode" ]]; then
