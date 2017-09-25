@@ -48,7 +48,10 @@ function pkt_setup () {
 }
 
 function insert_vrouter(){
-    modprobe vrouter
+    lsmod vrouter
+    if [ $? -ne 0 ];then
+      modprobe vrouter
+    fi
     ifup ${BIND_INT}
     if [ -f /sys/class/net/pkt1/queues/rx-0/rps_cpus ]; then
         pkt_setup pkt1
@@ -65,7 +68,7 @@ function insert_vrouter(){
     /bin/vif --add vhost0 --mac ${BIND_INT_MAC} --vrf 0 --type vhost --xconnect ${BIND_INT}
 }
 
-if [ -z "${VROUTER_DPDK}" ]; then
+if [[ "${TYPE}" == "kernel_mode" ]]; then
     insert_vrouter
 fi
 
